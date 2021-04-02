@@ -27,6 +27,14 @@ __sfr __at(0xCB) RCAP2H = 0;
 __sfr __at(0xCC) TL2 = 0;
 __sfr __at(0xCD) TH2 = 0;
 
+/* UART Registers */
+
+__sfr __at(0x98) SCON = 0;
+__sbit __at(0x98) RI;
+__sbit __at(0x99) TI;
+__sbit __at(0x9C) REN;
+__sfr __at(0x99) SBUF;
+
 /* Interrupt Registers */
 __sfr __at(0xA8) IE = 0;
 __sbit __at (0xA8) EX0;
@@ -35,3 +43,9 @@ __sbit __at (0xAA) EX1;
 __sbit __at (0xAB) ET1;
 __sbit __at (0xAC) ES;
 __sbit __at (0xAF) EA;
+
+/* POWER Registers */
+__sfr __at(0x87) PCON;
+
+/* ISP Registers */
+__sfr __at(0xE7) ISP_CONTR;

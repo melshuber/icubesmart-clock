@@ -4,9 +4,9 @@ SIM=$(TOOLCHAIN)/bin/s51
 CFLAGS=--debug -mmcs51 --std-c99
 LDFLAGS=--debug -mmcs51 --std-c99
 PROG=icube.ihx
-CSRC=main.c framebuffer.c cpu.c sim.c
+CSRC=main.c framebuffer.c cpu.c sim.c uart.c
 
-CFLAGS+=-DSIMULATION=1 -DNOSIM_FB=1
+CFLAGS+=-DSIMULATION=1 -DNOSIM_FB=1 -DNOSIM_UART=0
 
 .SUFFIXES: .rel
 
@@ -19,7 +19,10 @@ $(PROG): $(CSRC:.c=.rel)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 sim: all
-	$(SIM) -t 51R $(PROG) -I if=xram[0xffff] -C sim.cfg
+	rm -f uart_rx
+	rm -f uart_tx
+	mkfifo uart_rx
+	$(SIM) -t 51R $(PROG) -I if=xram[0xffff] -C sim.cfg -X 12M -Sout=uart_tx,in=uart_rx
 
 clean:
 	rm -f $(CSRC:.c=.rel)

@@ -2,6 +2,7 @@
 #define SIM_H
 
 #include <string.h>
+#include <stdint.h>
 
 #if SIMULATION
 

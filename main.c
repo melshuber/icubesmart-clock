@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include "framebuffer.h"
+#include "uart.h"
 #include "board.h"
 #include "cpu.h"
 #include "sim.h"
@@ -21,12 +22,10 @@ void main(void)
 	sim_puts("SIMULATION\n");
 
 	EA = 1;
+	uart_init();
 	fb_init();
 
-	/* sim_stop(); */
-	/* sim_stop(); */
-	/* sim_stop(); */
-	/* sim_stop(); */
+	uart_puts("UART active\n");
 
 	while (1) {
 		if (!fb_back_frame_complete()) {

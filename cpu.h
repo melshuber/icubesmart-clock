@@ -34,6 +34,13 @@ extern __sfr RCAP2H;
 extern __sfr TL2;
 extern __sfr TH2;
 
+/* UART Registers */
+extern __sfr SCON;
+extern __sbit RI;
+extern __sbit TI;
+extern __sbit REN;
+extern __sfr SBUF;
+
 /* Interrupt Registers */
 extern __sfr IE;
 extern __sbit EX0;
@@ -42,6 +49,12 @@ extern __sbit EX1;
 extern __sbit ET1;
 extern __sbit ES;
 extern __sbit EA;
+
+/* POWER Registers */
+extern __sfr PCON;
+
+/* ISP Registers */
+extern __sfr ISP_CONTR;
 
 #define NOP()						\
 	__asm						\

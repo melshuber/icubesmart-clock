@@ -19,7 +19,7 @@ $(PROG): $(CSRC:.c=.rel)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 sim: all
-	$(SIM) -t 51R $(PROG) -I if=xram[0xffff]
+	$(SIM) -t 51R $(PROG) -I if=xram[0xffff] -C sim.cfg
 
 clean:
 	rm -f $(CSRC:.c=.rel)

@@ -1,8 +1,15 @@
 #include <stdint.h>
+#include <stdio.h>
 
 #include "sim.h"
 
 __xdata __at(0xffff) uint8_t sif;
+
+int putchar(int __c)
+{
+	sim_putc(__c);
+	return __c;
+}
 
 enum sif_command {
   DETECT_SIGN	        = '!',	// answer to detect command

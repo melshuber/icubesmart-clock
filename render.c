@@ -114,6 +114,9 @@ static void render_tex2D_setup(mat4x4_t *transform)
 	/* printf("\n"); */
 }
 
+//#define VEC3_ADD(O, A) fp_add_vec3_vec3((O), (O), (A))
+#define VEC3_ADD(O, A) fp_fast_add_vec3((O), (A))
+
 void render_tex2D(
 	__xdata fb_frame_t *fb,
 	const __xdata tex2D_t *tex,
@@ -125,17 +128,17 @@ void render_tex2D(
 
 	for (z = 0;
 	     z < 8;
-	     z++, fp_add_vec3_vec3(&render_tex2D_xseg.pz, &render_tex2D_xseg.pz, &render_tex2D_xseg.uz))
+	     z++, VEC3_ADD(&render_tex2D_xseg.pz, &render_tex2D_xseg.uz))
 	{
 		memcpy(&render_tex2D_xseg.py, &render_tex2D_xseg.pz, sizeof(render_tex2D_xseg.py));
 		for (y = 0;
 		     y < 8;
-		     y++, fp_add_vec3_vec3(&render_tex2D_xseg.py, &render_tex2D_xseg.py, &render_tex2D_xseg.uy))
+		     y++, VEC3_ADD(&render_tex2D_xseg.py, &render_tex2D_xseg.uy))
 		{
 			memcpy(&render_tex2D_xseg.px, &render_tex2D_xseg.py, sizeof(render_tex2D_xseg.px));
 			for (x = 0;
 			     x < 8;
-			     x++, fp_add_vec3_vec3(&render_tex2D_xseg.px, &render_tex2D_xseg.px, &render_tex2D_xseg.ux))
+			     x++, VEC3_ADD(&render_tex2D_xseg.px, &render_tex2D_xseg.ux))
 			{
 				int8_t sx = FP_INT(render_tex2D_xseg.px[0]);
 				int8_t sy = FP_INT(render_tex2D_xseg.px[1]);

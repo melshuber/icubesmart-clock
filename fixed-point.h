@@ -128,6 +128,7 @@ void fp_print_mat4x4(const mat4x4_t *m);
 void fp_identity_mat4x4(mat4x4_t *o) __reentrant;
 void fp_add_vec3_vec3(vec3_t *o, const vec3_t *a, const vec3_t *b) __reentrant;
 void fp_add_vec4_vec4(vec4_t *o, const vec4_t *a, const vec4_t *b) __reentrant;
+void fp_fast_add_vec3(__xdata vec3_t *o, const __xdata vec3_t *a) __reentrant;
 
 void fp_mul_mat4x4_mat4x4(mat4x4_t *o, const mat4x4_t *a, const mat4x4_t *b) __reentrant;
 void fp_mul_mat4x4_vec4(vec3_t *o, const mat4x4_t *a, const vec4_t *b) __reentrant;

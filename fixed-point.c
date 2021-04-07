@@ -322,6 +322,14 @@ void fp_add_vec4_vec4(vec4_t *o, const vec4_t *a, const vec4_t *b) __reentrant
 	}
 }
 
+void fp_fast_add_vec3(__xdata vec3_t *o, const __xdata vec3_t *a) __reentrant
+{
+	int8_t i;
+	for (i = 2; i >= 0; i--) {
+		(*o)[i] = fp_add((*o)[i], (*a)[i]);
+	}
+}
+
 #define OVERLAY_FIELD fp_pre_translate_mat4x4_vec3
 void fp_pre_translate_mat4x4_vec3(mat4x4_t *m, const vec3_t *v) __reentrant
 {

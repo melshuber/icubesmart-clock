@@ -49,3 +49,6 @@ __sfr __at(0x87) PCON;
 
 /* ISP Registers */
 __sfr __at(0xE7) ISP_CONTR;
+
+/* Other Registers */
+__sfr __at(0xA2) AUXR1;

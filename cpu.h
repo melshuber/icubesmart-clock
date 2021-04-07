@@ -56,6 +56,9 @@ extern __sfr PCON;
 /* ISP Registers */
 extern __sfr ISP_CONTR;
 
+/* Other Registers */
+extern __sfr AUXR1;
+
 #define NOP()						\
 	__asm						\
 		nop					\

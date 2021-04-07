@@ -5,9 +5,9 @@ MEMORY_MODEL=--model-medium
 CFLAGS=--debug -mmcs51 --std-c99 $(MEMORY_MODEL) -DFP_BITS_16 -DFP_EXP_BITS=8
 LDFLAGS=--debug -mmcs51 --std-c99 $(MEMORY_MODEL)
 PROG=icube.ihx
-CSRC=main.c framebuffer.c cpu.c sim.c uart.c fixed-point.c
+CSRC=main.c framebuffer.c cpu.c sim.c uart.c render.c fixed-point.c
 
-CFLAGS+=-DSIMULATION=1 -DNOSIM_FB=1 -DNOSIM_UART=0
+CFLAGS+=-DSIMULATION=1 -DNOSIM_FB=0 -DNOSIM_UART=0 -DNOSIM_RENDER=0
 
 .SUFFIXES: .rel
 

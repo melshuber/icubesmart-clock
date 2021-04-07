@@ -23,7 +23,7 @@ sim: all
 	rm -f uart_rx
 	rm -f uart_tx
 	mkfifo uart_rx
-	$(SIM) -t 51R $(PROG) -I if=xram[0xffff] -C sim.cfg -X 12M -Sout=uart_tx,in=uart_rx
+	$(SIM) -t 89C51R $(PROG) -I if=xram[0xffff] -C sim.cfg -X 12M -Sout=uart_tx,in=uart_rx
 
 clean:
 	rm -f $(CSRC:.c=.rel)

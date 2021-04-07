@@ -20,7 +20,7 @@ enum sif_command {
   SIFCM_WRITE		= 'w',	// write to output file
 };
 
-int8_t sim_detect(void)
+int8_t sim_detect(void) __critical
 {
 	sif = SIFCM_DETECT;
 	return sif == DETECT_SIGN;
@@ -32,7 +32,7 @@ void sim_stop(void)
 	sif = SIFCM_STOP;
 }
 
-void sim_putc(char c)
+void sim_putc(char c) __critical
 {
 	sif = SIFCM_PRINT;
 	sif = (uint8_t)c;

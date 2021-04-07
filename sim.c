@@ -45,3 +45,43 @@ void sim_puts(__code const char *str)
 		str++;
 	}
 }
+
+void sim_putx(uint8_t c) __critical
+{
+	sif = SIFCM_PRINT;
+
+	sif = (c < 10) ?
+		('0' + c) :
+		('A' + c - 10);
+}
+
+void sim_put_uint8(uint8_t c)
+{
+	sim_putx((c >> 4) & 0xf);
+	sim_putx(c & 0xf);
+}
+
+void sim_put_uint16(uint16_t c)
+{
+	sim_putx((c >> 12) & 0xf);
+	sim_putx((c >> 8) & 0xf);
+	sim_putx((c >> 4) & 0xf);
+	sim_putx(c & 0xf);
+}
+
+void sim_put_uint32(uint32_t c)
+{
+	sim_putx((c >> 28) & 0xf);
+	sim_putx((c >> 24) & 0xf);
+	sim_putx((c >> 20) & 0xf);
+	sim_putx((c >> 16) & 0xf);
+	sim_putx((c >> 12) & 0xf);
+	sim_putx((c >> 8) & 0xf);
+	sim_putx((c >> 4) & 0xf);
+	sim_putx(c & 0xf);
+}
+
+void sim_put_intptr(intptr_t c)
+{
+	sim_put_uint32(c);
+}

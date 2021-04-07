@@ -322,6 +322,7 @@ void fp_add_vec4_vec4(vec4_t *o, const vec4_t *a, const vec4_t *b) __reentrant
 	}
 }
 
+#if !defined(FP_BITS_16) || USE_FAST_ADD_VEC3_ASM==0
 void fp_fast_add_vec3(__xdata vec3_t *o, const __xdata vec3_t *a) __reentrant
 {
 	int8_t i;
@@ -329,6 +330,59 @@ void fp_fast_add_vec3(__xdata vec3_t *o, const __xdata vec3_t *a) __reentrant
 		(*o)[i] = fp_add((*o)[i], (*a)[i]);
 	}
 }
+#else
+void fp_fast_add_vec3(__xdata vec3_t *o, const __xdata vec3_t *a) __reentrant __naked
+{
+	(void)o;
+	(void)a;
+	__asm
+		push   7
+		mov    A, SP
+		add    A, #-4
+
+		// Use 2nd DPTR to address a[0,1,2]
+		inc    _AUXR1
+		mov    R0, A
+		mov    DPL, @R0
+		inc    R0
+		mov    DPH, @R0
+
+		mov    R7, #3
+
+		inc    _AUXR1
+	0001$:
+		inc    _AUXR1
+		/* LOAD a[0,2,3] int R0, R1 */
+		movx   A, @DPTR
+		mov    R0, A
+		inc    DPTR
+		movx   A, @DPTR
+		mov    R1, A
+		inc    DPTR
+
+		/* Switch to 1st DPTR */
+		inc    _AUXR1
+
+		movx   A, @DPTR
+		add    A, R0
+		movx   @DPTR, A
+		inc    DPTR   /* Note: inc does not affect flags */
+
+		/* advance DPTR */
+		movx   A, @DPTR
+		addc   A, R1
+		movx   @DPTR, A
+		inc    DPTR
+
+		dec    R7
+		mov    A, R7
+		jnz    0001$
+
+		pop    7
+		ret;
+	__endasm;
+}
+#endif
 
 #define OVERLAY_FIELD fp_pre_translate_mat4x4_vec3
 void fp_pre_translate_mat4x4_vec3(mat4x4_t *m, const vec3_t *v) __reentrant

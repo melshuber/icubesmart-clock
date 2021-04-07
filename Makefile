@@ -7,6 +7,7 @@ LDFLAGS=--debug -mmcs51 --std-c99 $(MEMORY_MODEL)
 PROG=icube.ihx
 CSRC=main.c framebuffer.c cpu.c sim.c uart.c render.c fixed-point.c
 
+CFLAGS+=-DUSE_FAST_ADD_VEC3_ASM=1
 CFLAGS+=-DSIMULATION=1 -DNOSIM_FB=0 -DNOSIM_UART=0 -DNOSIM_RENDER=0
 
 .SUFFIXES: .rel

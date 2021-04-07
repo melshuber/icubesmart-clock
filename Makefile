@@ -1,8 +1,9 @@
 TOOLCHAIN=/opt/sdcc/sdcc
 CC=$(TOOLCHAIN)/bin/sdcc
 SIM=$(TOOLCHAIN)/bin/s51
-CFLAGS=--debug -mmcs51 --std-c99
-LDFLAGS=--debug -mmcs51 --std-c99
+MEMORY_MODEL=--model-medium
+CFLAGS=--debug -mmcs51 --std-c99 $(MEMORY_MODEL)
+LDFLAGS=--debug -mmcs51 --std-c99 $(MEMORY_MODEL)
 PROG=icube.ihx
 CSRC=main.c framebuffer.c cpu.c sim.c uart.c
 

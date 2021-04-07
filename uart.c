@@ -1,4 +1,5 @@
 #include "board.h"
+#include "cpu.h"
 #include "uart.h"
 #include <stdint.h>
 
@@ -9,47 +10,45 @@
 
 #include "sim.h"
 
-#define BAUD 9600
 
 /* BAUD_CLKS
  *
  * Computed manually to avoid integer overflow
  *
- * BAUD = 9600
- * UART_DIVIDER = 16
- * UART_TIMER_HZ =  1_000_000Hz
+ * BAUD = 115200
  *
- * PLANE_CLKS = UART_TIMER_CLK_HZ / (BAUD * UART_DIVIDER)
- *            = 1_000_000 / (9600 * 16)
- *            = 6.51
+ * BAUD_CLKS = CPU_CLK_HZ / 16 / BAUD = 13
  */
-#define BAUD_CLKS 7
+#define BAUD 115200
+#define BAUD_CLKS 13
 
 static volatile __bit _uart_busy = 0;
-
 void uart_init(void)
 {
+	uint8_t tmp;
 	sim_puts("uart_init\n");
 
-        uint8_t tmp;
-	// Setup Timer as 8 Bit Timer with auto reloade
-	tmp = UART_TIMER_MOD;
-	tmp &= ~(0x0f << UART_TIMER_MOD_SHIFT);
-	tmp |= (0x02 << UART_TIMER_MOD_SHIFT);
-	UART_TIMER_MOD = tmp;
+	/* Setup BRT - BAUD 115200 */
+	BRT = 256 - BAUD_CLKS;
 
-	UART_TIMER_TL = (uint8_t)(256 - BAUD_CLKS);
-	UART_TIMER_TH = (uint8_t)(256 - BAUD_CLKS);
+	/* Setup UART1 into Mode 1 */
+	SM0 = 0;
+	SM1 = 1;
+	SM2 = 0;
 
-	UART_TIMER_RUN = 1;
-
-	// set SMOD in PCON register to double baudrate
 	tmp = PCON;
-	tmp |= (1 << 7);
+	tmp &= ~(PCON_SMOD0_val | PCON_SMOD_val);
+	tmp |= PCON_SMOD_val;
 	PCON = tmp;
 
+	/* Select and enable dedicated bautrate generator */
+	tmp = AUXR;
+	tmp &= ~(AUXR_S1BRS_val | AUXR_BRTR_val | AUXR_BRTx12_val);
+	tmp |= AUXR_S1BRS_val | AUXR_BRTR_val | AUXR_BRTx12_val;
+	AUXR = tmp;
+
 	UART_REN = 1;
-        UART_IE = 1;
+	UART_IE = 1;
 }
 
 void uart_isr() __interrupt(UART_IRQ)
@@ -70,7 +69,7 @@ void uart_isr() __interrupt(UART_IRQ)
 			ISP_CONTR = 0x60;  //0110_0000 soft reset system to run ISP
 		}
 
-                UART_RI = 0;
+		UART_RI = 0;
 	}
 }
 

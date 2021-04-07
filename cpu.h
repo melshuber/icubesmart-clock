@@ -38,8 +38,14 @@ extern __sfr TH2;
 extern __sfr SCON;
 extern __sbit RI;
 extern __sbit TI;
+extern __sbit RB8;
+extern __sbit TB8;
 extern __sbit REN;
+extern __sbit SM2;
+extern __sbit SM1;
+extern __sbit SM0;
 extern __sfr SBUF;
+extern __sfr BRT;
 
 /* Interrupt Registers */
 extern __sfr IE;
@@ -52,11 +58,22 @@ extern __sbit EA;
 
 /* POWER Registers */
 extern __sfr PCON;
+#define PCON_SMOD0_val (1 << 6)
+#define PCON_SMOD_val (1 << 7)
 
 /* ISP Registers */
 extern __sfr ISP_CONTR;
 
 /* Other Registers */
+extern __sfr AUXR;
+#define AUXR_S1BRS_val (1 << 0)
+#define AUXR_EXTRAM_val (1 << 1)
+#define AUXR_BRTx12_val (1 << 2)
+#define AUXR_S2SMOD_val (1 << 3)
+#define AUXR_BRTR_val (1 << 4)
+#define AUXR_UART_M0x6_val (1 << 5)
+#define AUXR_T1x12_val (1 << 6)
+#define AUXR_T0x12_val (1 << 7)
 extern __sfr AUXR1;
 
 #define NOP()						\

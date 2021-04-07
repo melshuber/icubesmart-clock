@@ -32,8 +32,14 @@ __sfr __at(0xCD) TH2 = 0;
 __sfr __at(0x98) SCON = 0;
 __sbit __at(0x98) RI;
 __sbit __at(0x99) TI;
+__sbit __at(0x9A) RB8;
+__sbit __at(0x9B) TB8;
 __sbit __at(0x9C) REN;
+__sbit __at(0x9D) SM2;
+__sbit __at(0x9E) SM1;
+__sbit __at(0x9F) SM0;
 __sfr __at(0x99) SBUF;
+__sfr __at(0x9C) BRT;
 
 /* Interrupt Registers */
 __sfr __at(0xA8) IE = 0;
@@ -51,4 +57,5 @@ __sfr __at(0x87) PCON;
 __sfr __at(0xE7) ISP_CONTR;
 
 /* Other Registers */
+__sfr __at(0x8E) AUXR;
 __sfr __at(0xA2) AUXR1;

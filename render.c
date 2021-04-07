@@ -114,6 +114,8 @@ static void render_tex2D_setup(mat4x4_t *transform)
 	/* printf("\n"); */
 }
 
+#if !USE_RENDER_TEX2D_ASM || !USE_FAST_ADD_VEC3_ASM || !defined(FP_BITS_16) || (FP_EXP_BITS != 8)
+
 //#define VEC3_ADD(O, A) fp_add_vec3_vec3((O), (O), (A))
 #define VEC3_ADD(O, A) fp_fast_add_vec3((O), (A))
 
@@ -160,6 +162,290 @@ void render_tex2D(
 		}
 	}
 }
+
+#else
+
+/* Requires USE_FAST_ADD_VEC3_ASM, since the non-asm implementation
+ * clobbers different registers. Otherwise it is an optimized variant
+ * of the C implementation above. */
+
+void render_tex2D(
+	__xdata fb_frame_t *fb,
+	const __xdata tex2D_t *tex,
+	mat4x4_t *transform) __naked
+{
+	// hash the compiler
+	(void)fb;
+	(void)tex;
+	(void)transform;
+	__asm
+		push	7 // r7 is used as z plane counter
+		push	6 // r6 is used as y line counter
+		push	5 // r5 is used as x pixel counter
+		push	4 // r4 is used as tmp register to store pixels in line
+		push	3 // r2 is used as high byte of the frame buffer address
+		push	2 // r2 is used as low byte of the frame buffer address
+
+		// push address of FP
+		push	DPL
+		push	DPH
+
+		/* call render_tex2D_setup(transform) */
+		mov	R0, #_render_tex2D_PARM_3
+		movx	A, @R0
+		mov	DPL, A
+		inc	R0
+		movx	A, @R0
+		mov	DPH, A
+		inc	R0
+		movx	A, @R0
+		mov	B, A
+		lcall	_render_tex2D_setup
+
+		/* Restore pushed FB onto R2,R3 */
+		pop	3
+		pop	2
+
+		/* store &uz onto stack */
+		mov	DPTR, #(_render_tex2D_xseg + 30)
+		push	DPL
+		push	DPH
+
+
+		/*****************************/
+		/* START OF LOOPs	     */
+
+		/* for (z = 0; z != 8; z++) */
+		mov	R7, #0
+	0001$:
+		/* store &uy onto stack */
+		mov	DPTR, #(_render_tex2D_xseg + 18)
+		push	DPL
+		push	DPH
+
+		/* Initialize py (start of current plane; this is pz)
+		 *
+		 * Note: &pz is currently the top of the stack */
+		mov	DPTR, #(_render_tex2D_xseg + 12)
+		inc	_AUXR1
+		mov	DPTR, #(_render_tex2D_xseg + 24)
+		lcall	0100$
+
+		/* for (y = 0; y != 8; y++) */
+		mov	R6, #0
+	0002$:
+
+		/* store &ux onto stack */
+		mov	DPTR, #(_render_tex2D_xseg + 6)
+		push	DPL
+		push	DPH
+
+		/* Initialize px (start of current line; this is py)
+		 *
+		 * Note: &py is currently the top of the stack */
+		mov	DPTR, #(_render_tex2D_xseg + 0)
+		inc	_AUXR1
+		mov	DPTR, #(_render_tex2D_xseg + 12)
+		lcall	0100$
+
+		/* clear bits int row */
+		mov	R4, #0
+		/* for (x = 0; x != 8; x++) */
+		mov	R5, #0
+	0003$:
+		/* tmp >>= 1 */
+		mov	A, R4
+		rr	A
+		mov	R4, A
+
+		/* check if FP_INT(px[2]) is within 0 to 7 */
+		mov	DPTR, #(_render_tex2D_xseg + 5)
+		movx	A, @DPTR
+		jnz	0004$
+
+		/* check if FP_INT(px[1]) is within 0 to 7 */
+		mov	DPTR, #(_render_tex2D_xseg + 3)
+		movx	A, @DPTR
+		mov	R0, A	/* store offset within texture */
+		anl	A, #0xF8
+		jnz	0004$
+
+		/* Load effective ROW of texture into R1 */
+		mov	R1, #_render_tex2D_PARM_2
+		movx	A, @R1
+		add	A, R0
+		mov	DPL, A
+		inc	R1
+		movx	A, @R1
+		addc	A, #0
+		mov	DPH, A
+		movx	A, @DPTR
+		mov	R1, A
+
+		/* check if FP_INT(px[0]) is within 0 to 7 */
+		mov	DPTR, #(_render_tex2D_xseg + 1)
+		movx	A, @DPTR
+		mov	R0, A
+		anl	A, #0xF8
+		jnz	0004$
+
+		/* Move texture row into A, and FP_INT(px[0]) into
+		 * R1, (exchange bytes) */
+		inc	R0
+		mov	A, R1
+		/* now rotate the texture until the corresponding bit
+		 * left most */
+		sjmp	0006$
+	0005$:
+		rr	A
+	0006$:
+		djnz	R0, 0005$
+
+		/* check if bit in texture is set */
+		anl	A, #1
+		jz	0004$
+
+		/* set bit in row to render */
+		mov	A, R4
+		orl	A, #0x80
+		mov	R4, A
+	0004$:
+
+		/* px += ux
+		 *
+		 * Note: &ux is the top of the stack */
+
+		mov	DPTR, #(_render_tex2D_xseg)
+		lcall	_fp_fast_add_vec3
+
+		/* *****************************
+		 * EOF LOOP on X
+		 *
+		 * repeat for while x >= 0 */
+		inc	R5
+		cjne	R5, #0x08, 0003$
+
+		/* remove &py from stack */
+		dec	SP
+		dec	SP
+
+		/* Store line into frame buffer */
+		mov	DPL, R2
+		mov	DPH, R3
+		movx	A, @DPTR
+		orl	A, R4
+		movx	@DPTR, A
+		inc	DPTR
+
+		mov	R2, DPL
+		mov	R3, DPH
+
+		/* py += uy
+		 *
+		 * Note: &uy is the top of the stack */
+		mov	DPTR, #(_render_tex2D_xseg + 12)
+		lcall	_fp_fast_add_vec3
+
+		/* *****************************
+		 * EOF LOOP on Y
+		 *
+		 * repeat for while y >= 0 */
+		inc	R6
+		cjne	R6, #0x08, 0002$
+
+		/* remove &py from stack */
+		dec	SP
+		dec	SP
+
+		/* px += ux
+		 *
+		 * Note: &uz is the top of the stack */
+		mov	DPTR, #(_render_tex2D_xseg + 24)
+		lcall	_fp_fast_add_vec3
+
+		/* *****************************
+		 * EOF LOOP on Z
+		 *
+		 * repeat for while z >= 0 */
+		inc	R7
+		cjne	R7, #0x08, 0098$
+
+		/* remove &pz from stack */
+		dec	SP
+		dec	SP
+
+		pop	2
+		pop	3
+		pop	4
+		pop	5
+		pop	6
+		pop	7
+
+		ret
+
+		/* Trampoline to outermost loop */
+	0098$:
+		ljmp	0001$
+		/* mov	   R0, #_render_tex2D_z */
+		/* mov	   A, #7 */
+		/* movx	   @R0, A */
+
+		/* SUBROUTINE 0099
+		 *
+		 * Copy six byte from active DPTR to other DPTR and
+		 * switch the active DPTR */
+	0100$:
+	/* Byte 0 */
+		movx   A, @DPTR
+		inc    DPTR
+		inc    _AUXR1
+		movx   @DPTR, A
+		inc    DPTR
+
+	/* Byte 1 */
+		inc    _AUXR1
+		movx   A, @DPTR
+		inc    DPTR
+		inc    _AUXR1
+		movx   @DPTR, A
+		inc    DPTR
+
+	/* Byte 2 */
+		inc    _AUXR1
+		movx   A, @DPTR
+		inc    DPTR
+		inc    _AUXR1
+		movx   @DPTR, A
+		inc    DPTR
+
+	/* Byte 3 */
+		inc    _AUXR1
+		movx   A, @DPTR
+		inc    DPTR
+		inc    _AUXR1
+		movx   @DPTR, A
+		inc    DPTR
+
+	/* Byte 4 */
+		inc    _AUXR1
+		movx   A, @DPTR
+		inc    DPTR
+		inc    _AUXR1
+		movx   @DPTR, A
+		inc    DPTR
+
+	/* Byte 5 */
+		inc    _AUXR1
+		movx   A, @DPTR
+		inc    DPTR
+		inc    _AUXR1
+		movx   @DPTR, A
+
+		ret
+	0099$:
+	__endasm;
+}
+#endif
 
 #if SIMULATION
 #define PLANES_PER_ROW 8

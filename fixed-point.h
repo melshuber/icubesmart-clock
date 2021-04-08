@@ -112,15 +112,9 @@ typedef fp_t mat4x4_t[4][4];
 typedef fp_t vec3_t[3];
 typedef fp_t vec4_t[4];
 
-#if SIMULATION
 void fp_print_vec3(const vec3_t *v);
 void fp_print_vec4(const vec4_t *v);
 void fp_print_mat4x4(const mat4x4_t *m);
-#else
-#define fp_print_vec3(V) do { } while 0
-#define fp_print_vec4(V) do { } while 0
-#define fp_print_mat4x4(V) do { } while 0
-#endif
 
 /* These functions are relatively slow and consume quite a bit of
  * memory. To avoid spilling DSEG and PSEG we define them reentrant

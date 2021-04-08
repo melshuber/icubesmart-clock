@@ -62,19 +62,25 @@ extern __sfr PCON;
 #define PCON_SMOD_val (1 << 7)
 
 /* ISP Registers */
-extern __sfr ISP_CONTR;
+extern __sfr IAP_CONTR;
 
 /* Other Registers */
 extern __sfr AUXR;
-#define AUXR_S1BRS_val (1 << 0)
-#define AUXR_EXTRAM_val (1 << 1)
-#define AUXR_BRTx12_val (1 << 2)
-#define AUXR_S2SMOD_val (1 << 3)
-#define AUXR_BRTR_val (1 << 4)
-#define AUXR_UART_M0x6_val (1 << 5)
-#define AUXR_T1x12_val (1 << 6)
-#define AUXR_T0x12_val (1 << 7)
+#define S1BRS_val (1 << 0)
+#define EXTRAM_val (1 << 1)
+#define BRTx12_val (1 << 2)
+#define S2SMOD_val (1 << 3)
+#define BRTR_val (1 << 4)
+#define UART_M0x6_val (1 << 5)
+#define T1x12_val (1 << 6)
+#define T0x12_val (1 << 7)
 extern __sfr AUXR1;
+#define DPS_val (1 << 0)
+#define ADRJ_val (1 << 2)
+#define GF2_val (1 << 3)
+#define S2_P4_val (1 << 4)
+#define SPI_P4_val (1 << 5)
+#define PCA_P4_val (1 << 6)
 
 #define NOP()						\
 	__asm						\

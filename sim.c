@@ -1,6 +1,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#if SIMULATION
+
 #include "sim.h"
 
 __xdata __at(0xffff) uint8_t sif;
@@ -92,3 +94,5 @@ void sim_put_intptr(intptr_t c)
 {
 	sim_put_uint32(c);
 }
+
+#endif

@@ -47,7 +47,7 @@ static const vec4_t origin2 = {
 	FP_1,
 };
 
-const __xdata tex2D_t tex1 = {
+const tex2D_t tex1 = {
 	0xff,
 	0xff,
 	0xff,
@@ -58,7 +58,7 @@ const __xdata tex2D_t tex1 = {
 	0xff,
 };
 
-const __xdata tex2D_t tex2 = {
+const tex2D_t tex2 = {
 	0x0,
 	0x3f << 1,
 	0x3f << 1,
@@ -67,6 +67,17 @@ const __xdata tex2D_t tex2 = {
 	0x3f << 1,
 	0x3f << 1,
 	0x0,
+};
+
+const tex2D_t tex3 = {
+	0x18,
+	0x18,
+	0x18,
+	0xFF,
+	0xFF,
+	0x18,
+	0x18,
+	0x18,
 };
 
 void render_clear(__xdata fb_frame_t *fb)
@@ -147,8 +158,8 @@ void render_tex2D(
 				int8_t sz = FP_INT(render_tex2D_xseg.px[2]);
 				/* printf("\n"); */
 				/* printf("%d %d |", sx, sy); */
-				/* fp_print_vec3(&px); */
-//
+				/* fp_print_vec3(&render_tex2D_xseg.px); */
+
 				if ((sz != 0) ||
 				    (sy < 0) ||
 				    (sy >= 8) ||
@@ -447,23 +458,20 @@ void render_tex2D(
 }
 #endif
 
-#if SIMULATION
-#define PLANES_PER_ROW 8
+#define PLANES_PER_ROW 4
 
 #pragma save
 #pragma nogcse
 
-void render_sim_printfb(__xdata fb_frame_t *fb)
+void render_printfb(__xdata fb_frame_t *fb)
 {
 	static uint8_t x,y,z,j;
 
-	sim_puts("FB: ");
-	sim_put_intptr((intptr_t)fb);
-	sim_putc('\n');
+	printf("FB: %p\n", fb);
 
 	for (z = 0; z < 8; z+=PLANES_PER_ROW) {
 		for (j = 0; j < PLANES_PER_ROW; j++) {
-			printf("Plane %d		 |  ", z+j);
+			printf("Plane %d                 |  ", z+j);
 		}
 		putchar('\n');
 		for (y = 0; y < 8; y++) {
@@ -486,5 +494,3 @@ void render_sim_printfb(__xdata fb_frame_t *fb)
 	}
 }
 #pragma restore
-
-#endif

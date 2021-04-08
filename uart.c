@@ -3,6 +3,16 @@
 #include "uart.h"
 #include <stdint.h>
 
+#if !SIMULATION
+int putchar(int __c)
+{
+	if (EA) {
+		uart_putc(__c);
+	}
+	return __c;
+}
+#endif
+
 #if NOSIM_UART && SIMULATION
 #undef SIMULATION
 #define SIMULATION 0
@@ -10,17 +20,8 @@
 
 #include "sim.h"
 
-
-/* BAUD_CLKS
- *
- * Computed manually to avoid integer overflow
- *
- * BAUD = 115200
- *
- * BAUD_CLKS = CPU_CLK_HZ / 16 / BAUD = 13
- */
 #define BAUD 115200
-#define BAUD_CLKS 13
+#define BAUD_CLKS (CPU_CLK_HZ / 16 / BAUD)
 
 static volatile __bit _uart_busy = 0;
 void uart_init(void)
@@ -29,7 +30,7 @@ void uart_init(void)
 	sim_puts("uart_init\n");
 
 	/* Setup BRT - BAUD 115200 */
-	BRT = 256 - BAUD_CLKS;
+	BRT = (256 - BAUD_CLKS) & 0xff;
 
 	/* Setup UART1 into Mode 1 */
 	SM0 = 0;
@@ -43,8 +44,8 @@ void uart_init(void)
 
 	/* Select and enable dedicated bautrate generator */
 	tmp = AUXR;
-	tmp &= ~(AUXR_S1BRS_val | AUXR_BRTR_val | AUXR_BRTx12_val);
-	tmp |= AUXR_S1BRS_val | AUXR_BRTR_val | AUXR_BRTx12_val;
+	tmp &= ~(S1BRS_val | BRTR_val | BRTx12_val);
+	tmp |= S1BRS_val | BRTR_val | BRTx12_val;
 	AUXR = tmp;
 
 	UART_REN = 1;
@@ -65,8 +66,9 @@ void uart_isr() __interrupt(UART_IRQ)
 		tmp = SBUF;
 
 		if (tmp == 'R') {
+			SBUF = 'A';
 			sim_puts("uart_rx reboot to ISP\n");
-			ISP_CONTR = 0x60;  //0110_0000 soft reset system to run ISP
+			IAP_CONTR = 0x60;  //0110_0000 soft reset system to run ISP
 		}
 
 		UART_RI = 0;

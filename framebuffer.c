@@ -15,41 +15,38 @@
  *
  * Computed manually to avoid integer overflow
  *
- * DISPLAY_HZ = 20
+ * DISPLAY_HZ = 100
  * PLANE_HZ = 8 * DISPLAY_Hz
- * FB_TIMER_HZ =  1_000_000  Hz
+ * FB_TIMER_HZ =  2_000_000  Hz
  *
  * PLANE_CLKS = FB_TIMER_CLK_HZ / PLANE_HZ
- *	      = 1_000_000 / (8 * 20)
- *	      = 6_250
+ *	      = 2_000_000 / (8 * 100)
+ *	      = 2_500
  */
-#define PLANE_CLKS 6250
+#define PLANE_CLKS 2500
 #define FB_TIMER_TL_VAL ((65536 - PLANE_CLKS) & 0xff)
 #define FB_TIMER_TH_VAL (((65536 - PLANE_CLKS) >> 8) & 0xff)
 
 volatile uint8_t _fb_front_frame_idx = 0;
 volatile uint8_t _fb_back_frame_complete = 0;
 __xdata fb_frame_t _fb_frame[2];
-
-static inline void _fb_enable_plane(uint8_t plane)
-{
-	PLANE_ENABLE = ~(1 << plane);
-}
-
-static inline void _fb_disable_planes(void)
-{
-	PLANE_ENABLE = 0xff;
-}
+static __xdata uint8_t *_fb_current_pixels = _fb_frame[0].pixels;
+static uint8_t _fb_current_plane = 0;
 
 void fb_init(void)
 {
 	sim_puts("fb_init\n");
 
-	_fb_disable_planes();
+	/* disable planes */;
+	PLANE_ENABLE = 0xff;
 
-	memset(&_fb_frame, 0, sizeof(_fb_frame));
+	memset(&_fb_frame, 0x55, sizeof(_fb_frame));
+	_fb_front_frame_idx = 0;
+	_fb_back_frame_complete = 0;
+	_fb_current_pixels = fb_front_frame()->pixels;
+	_fb_current_plane = 0;
 
-	// Setup Timer as 16 Timer
+	/* Setup Timer as 16 Timer */
 	uint8_t tmp = FB_TIMER_MOD;
 	tmp &= ~(0x0f << FB_TIMER_MOD_SHIFT);
 	tmp |= (0x01 << FB_TIMER_MOD_SHIFT);
@@ -64,8 +61,7 @@ void fb_init(void)
 
 void fb_timer_isr(void) __interrupt(FB_TIMER_IRQ) __using(1)
 {
-	static uint8_t current_plane = 8;
-	__xdata uint8_t *current_pixels = _fb_frame[0].pixels;
+	sim_puts("fb_timer_isr\n");
 
 	/* Increase TL, TH to allow for best precision
 	 * see STC89C51RC Manual sec. 7.2
@@ -81,33 +77,33 @@ void fb_timer_isr(void) __interrupt(FB_TIMER_IRQ) __using(1)
 		SETB EA
 	__endasm;
 
-	/* before displaying the frame check if we need to flip
-	 * it. */
-	if ((current_plane == 0) && (fb_back_frame_complete())) {
-		sim_puts("fb_flip\n");
-		// flip frame
-		_fb_front_frame_idx ^= 1;
-		// indicate the back frame can be used
-		_fb_back_frame_complete = 0;
-	}
-
-	if (current_plane >= 8) {
-		current_pixels = fb_front_frame()->pixels;
-		current_plane = 0;
-	}
-
-	_fb_disable_planes();
+	/* disable planes */;
+	PLANE_ENABLE = 0xff;
 
 	// iterate over all bits in the LATCH_LOAD register
 	uint8_t latch_load;
 	for (latch_load = 1; latch_load != 0; latch_load <<= 1) {
-		LATCH_DATA = *current_pixels;
+		LATCH_DATA = ~*_fb_current_pixels;
 		LATCH_LOAD = latch_load;
-		NOP(); NOP();
 		LATCH_LOAD = 0;
-		current_pixels++;
+		_fb_current_pixels++;
 	}
 
-	_fb_enable_plane(current_plane);
-	current_plane++;
+	/* enable plane */;
+	PLANE_ENABLE = ~(1 << _fb_current_plane);
+
+	_fb_current_plane++;
+
+	if (_fb_current_plane >= 8) {
+		/* Check if we need to flip framebuffers */
+		if (fb_back_frame_complete()) {
+			sim_puts("fb_flip\n");
+			// flip frame
+			_fb_front_frame_idx ^= 1;
+			// indicate the back frame can be used
+			_fb_back_frame_complete = 0;
+		}
+		_fb_current_pixels = fb_front_frame()->pixels;
+		_fb_current_plane = 0;
+	}
 }

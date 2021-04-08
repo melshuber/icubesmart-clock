@@ -28,7 +28,6 @@ __sfr __at(0xCC) TL2 = 0;
 __sfr __at(0xCD) TH2 = 0;
 
 /* UART Registers */
-
 __sfr __at(0x98) SCON = 0;
 __sbit __at(0x98) RI;
 __sbit __at(0x99) TI;
@@ -54,7 +53,7 @@ __sbit __at (0xAF) EA;
 __sfr __at(0x87) PCON;
 
 /* ISP Registers */
-__sfr __at(0xE7) ISP_CONTR;
+__sfr __at(0xC7) IAP_CONTR;
 
 /* Other Registers */
 __sfr __at(0x8E) AUXR;

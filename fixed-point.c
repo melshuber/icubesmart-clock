@@ -121,7 +121,6 @@ static __pdata union {
 #define pso_c PSO(c)
 #define pso_inv_c PSO(inv_c)
 
-#if SIMULATION
 #pragma save
 #pragma nogcse
 void fp_print_vec4(const vec4_t *v)
@@ -160,7 +159,6 @@ void fp_print_mat4x4(const mat4x4_t *m)
 	}
 }
 #pragma restore
-#endif
 
 fp_t fp_mul(const fp_t a, const fp_t b)
 {

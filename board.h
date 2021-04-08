@@ -7,7 +7,7 @@
 #define K(X) (Hz(X) * 1000)
 #define Hz(X) (X)
 
-#define CPU_CLK_HZ M(Hz(12))
+#define CPU_CLK_HZ M(Hz(24LL))
 #define TIMER_CLK_HZ (CPU_CLK_HZ / 12)
 
 /* Configure Frame Buffer */
@@ -26,13 +26,6 @@
 #define PLANE_ENABLE P1
 
 /* Configure UART */
-#define UART_TIMER_MOD TMOD
-#define UART_TIMER 1
-#define UART_TIMER_MOD_SHIFT (UART_TIMER * 4)
-#define UART_TIMER_RUN TR1
-#define UART_TIMER_TL TL1
-#define UART_TIMER_TH TH1
-
 #define UART_IRQ 4
 #define UART_RI RI
 #define UART_TI TI

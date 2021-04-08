@@ -8,8 +8,9 @@
 
 typedef uint8_t tex2D_t[8];
 
-extern const __xdata tex2D_t tex1;
-extern const __xdata tex2D_t tex2;
+extern const tex2D_t tex1;
+extern const tex2D_t tex2;
+extern const tex2D_t tex3;
 
 void render_clear(__xdata fb_frame_t *fb);
 void render_set_pixel(
@@ -22,9 +23,6 @@ void render_tex2D(
 	const __xdata tex2D_t *tex,
 	mat4x4_t *transform);
 
-#if SIMULATION
-void render_sim_printfb(__xdata fb_frame_t *fb);
-#else
-#define render_sim_printfb(X) do { } while (0)
-#endif
+void render_printfb(__xdata fb_frame_t *fb);
+
 #endif

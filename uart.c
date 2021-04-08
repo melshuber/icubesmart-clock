@@ -13,15 +13,17 @@
 #define BAUD 115200
 #define BAUD_CLKS (CPU_CLK_HZ / 16 / BAUD)
 
-static volatile __bit _uart_busy = 0;
-static volatile __bit _uart_redirect_to_simulation = 0;
+static volatile __bit _uart_busy;
+static volatile __bit _uart_redirect_to_simulation;
+static volatile __bit _uart_need_nl;
 
 void uart_init(void) __critical
 {
 	uint8_t tmp;
 
 	_uart_busy = 0;
-	_uart_redirect_to_simulation = 0;
+        _uart_need_nl = 0;
+        _uart_redirect_to_simulation = 0;
 
 	if (sim_detect()) {
 		_uart_redirect_to_simulation = 1;
@@ -55,7 +57,13 @@ void uart_isr() __interrupt(UART_IRQ)
 	uint8_t tmp;
 	if (UART_TI) {
 		UART_TI = 0;
-		_uart_busy = 0;
+
+		if (_uart_need_nl) {
+			SBUF = '\n';
+			_uart_need_nl = 0;
+		} else {
+			_uart_busy = 0;
+		}
 	}
 
 	if (UART_RI) {
@@ -73,6 +81,14 @@ void uart_putc(char c)
 {
 	while (_uart_busy) ;
 	_uart_busy = 1;
+
+	// insert a \r before \n
+        if (c == '\n') {
+		_uart_need_nl = 1;
+                SBUF = '\r';
+		return;
+	}
+
 	SBUF = c;
 }
 

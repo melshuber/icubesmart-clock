@@ -6,6 +6,8 @@ CFLAGS=--debug -mmcs51 --std-c99 $(MEMORY_MODEL) -DFP_BITS_16 -DFP_EXP_BITS=8
 LDFLAGS=--debug -mmcs51 --std-c99 $(MEMORY_MODEL)
 PROG=icube.ihx
 CSRC=main.c framebuffer.c cpu.c sim.c uart.c render.c fixed-point.c
+TTY?=/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
+BAUD?=115200
 
 CFLAGS+=-DUSE_FAST_ADD_VEC3_ASM=1
 CFLAGS+=-DUSE_RENDER_TEX2D_ASM=1
@@ -32,6 +34,12 @@ sim: all
 	#rm -f uart_rx
 	#mkfifo uart_rx
 	$(SIM) -t 89C51R $(PROG) -I if=sfr[0xff] -C sim.cfg -X 24M -Sout=uart_tx,in=uart_rx
+
+flash: all
+	stcgal -P stc12 -p $(TTY) -b $(BAUD) icube.ihx
+
+console:
+	picocom -b $(BAUD) $(TTY)
 
 clean:
 	rm -f $(CSRC:.c=.rel)

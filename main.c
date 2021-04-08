@@ -11,6 +11,7 @@
 #include "render.h"
 #include "sim.h"
 #include "fixed-point.h"
+#include "time.h"
 
 static __xdata tex2D_t texture;
 
@@ -41,6 +42,28 @@ void bench_render_tex2d(__xdata fb_frame_t *fb)
 	sim_stop();
 }
 
+void pca_init() __critical
+{
+	uint8_t tmp;
+
+	tmp = AUXR1;
+	tmp &= ~PCA_P4_val;
+	AUXR1 = tmp;
+
+	CL = 0;
+	CH = 0;
+	CMOD = CPS_div12;
+	CCON = CR_val;
+}
+
+void pca_isr() __interrupt(7)
+{
+	if (TIME_CCF) {
+		TIME_CCF = 0;
+		time_isr();
+	}
+}
+
 void main(void)
 {
 	memcpy(&texture, &tex1, sizeof(tex2D_t));
@@ -54,6 +77,12 @@ void main(void)
 
 	fb_init();
 	printf("Framebuffer initialized\n");
+
+	time_init();
+	printf("Time initialized\n");
+
+	pca_init();
+	printf("PCA initialized\n");
 
 	uint8_t i=0;
 

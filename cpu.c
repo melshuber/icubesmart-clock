@@ -40,6 +40,24 @@ __sbit __at(0x9F) SM0;
 __sfr __at(0x99) SBUF;
 __sfr __at(0x9C) BRT;
 
+/* PCA Registers */
+__sfr __at(0xD8) CCON;
+__sbit __at(0xD8) CCF0;
+__sbit __at(0xD9) CCF1;
+__sbit __at(0xDE) CR;
+__sbit __at(0xDF) CF;
+__sfr __at(0xD9) CMOD;
+__sfr __at(0xDA) CCAPM0;
+__sfr __at(0xDB) CCAPM1;
+__sfr __at(0xE9) CL;
+__sfr __at(0xF9) CH;
+__sfr __at(0xEA) CCAP0L;
+__sfr __at(0xFA) CCAP0H;
+__sfr __at(0xEB) CCAP1L;
+__sfr __at(0xFB) CCAP1H;
+__sfr __at(0xF2) PCA_PWM0;
+__sfr __at(0xF3) PCA_PWM1;
+
 /* Interrupt Registers */
 __sfr __at(0xA8) IE = 0;
 __sbit __at (0xA8) EX0;

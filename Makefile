@@ -5,7 +5,7 @@ MEMORY_MODEL=--model-medium
 CFLAGS=--debug -mmcs51 --std-c99 $(MEMORY_MODEL) -DFP_BITS_16 -DFP_EXP_BITS=8
 LDFLAGS=--debug -mmcs51 --std-c99 $(MEMORY_MODEL)
 PROG=icube.ihx
-CSRC=main.c framebuffer.c cpu.c sim.c uart.c render.c fixed-point.c
+CSRC=main.c framebuffer.c cpu.c sim.c uart.c render.c fixed-point.c time.c
 TTY?=/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
 BAUD?=115200
 
@@ -18,6 +18,7 @@ CFLAGS+=--disable-warning 126
 #CFLAGS+=-DDEBUG_MAIN
 #CFLAGS+=-DDEBUG_RENDER
 #CFLAGS+=-DDEBUG_FRAMEBUFFER
+#CFLAGS+=-DDEBUG_TIME
 
 .SUFFIXES: .rel
 

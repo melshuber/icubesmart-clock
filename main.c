@@ -94,9 +94,8 @@ void main(void)
 			fb_back_frame_completed();
 			note("Frame: %d\n", i);
 			i++;
+	for (;;PCON |= 1) {
 		}
 
-		// enter idle
-		PCON |= 1;
 	}
 }

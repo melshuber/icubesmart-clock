@@ -3,16 +3,6 @@
 #include "uart.h"
 #include <stdint.h>
 
-#if !SIMULATION
-int putchar(int __c)
-{
-	if (EA) {
-		uart_putc(__c);
-	}
-	return __c;
-}
-#endif
-
 #if NOSIM_UART && SIMULATION
 #undef SIMULATION
 #define SIMULATION 0
@@ -24,10 +14,18 @@ int putchar(int __c)
 #define BAUD_CLKS (CPU_CLK_HZ / 16 / BAUD)
 
 static volatile __bit _uart_busy = 0;
-void uart_init(void)
+static volatile __bit _uart_redirect_to_simulation = 0;
+
+void uart_init(void) __critical
 {
 	uint8_t tmp;
-	sim_puts("uart_init\n");
+
+	_uart_busy = 0;
+	_uart_redirect_to_simulation = 0;
+
+	if (sim_detect()) {
+		_uart_redirect_to_simulation = 1;
+	}
 
 	/* Setup BRT - BAUD 115200 */
 	BRT = (256 - BAUD_CLKS) & 0xff;
@@ -56,18 +54,14 @@ void uart_isr() __interrupt(UART_IRQ)
 {
 	uint8_t tmp;
 	if (UART_TI) {
-		sim_puts("uart_tx_complete\n");
 		UART_TI = 0;
 		_uart_busy = 0;
 	}
 
 	if (UART_RI) {
-		sim_puts("uart_rx_complete\n");
 		tmp = SBUF;
 
 		if (tmp == 'R') {
-			SBUF = 'A';
-			sim_puts("uart_rx reboot to ISP\n");
 			IAP_CONTR = 0x60;  //0110_0000 soft reset system to run ISP
 		}
 
@@ -77,7 +71,6 @@ void uart_isr() __interrupt(UART_IRQ)
 
 void uart_putc(char c)
 {
-	sim_puts("uart_tx\n");
 	while (_uart_busy) ;
 	_uart_busy = 1;
 	SBUF = c;
@@ -89,4 +82,16 @@ void uart_puts(__code const char *str)
 		uart_putc(*str);
 		str++;
 	}
+}
+
+int putchar(int c)
+{
+	if (EA) {
+		if (_uart_redirect_to_simulation) {
+			sim_putc(c);
+		} else {
+			uart_putc(c);
+		}
+	}
+	return c;
 }

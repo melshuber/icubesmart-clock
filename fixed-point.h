@@ -97,6 +97,8 @@ typedef int16_t fp2_t;
  */
 #define FP_sPI FP_FROM_INT(2)
 
+void fp_print(const fp_t v);
+
 #define fp_add(A, B) ((A) + (B))
 #define fp_sub(A, B) ((A) - (B))
 fp_t fp_mul(const fp_t a, const fp_t b);

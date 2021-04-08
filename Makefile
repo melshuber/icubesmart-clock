@@ -9,7 +9,13 @@ CSRC=main.c framebuffer.c cpu.c sim.c uart.c render.c fixed-point.c
 
 CFLAGS+=-DUSE_FAST_ADD_VEC3_ASM=1
 CFLAGS+=-DUSE_RENDER_TEX2D_ASM=1
-CFLAGS+=-DSIMULATION=1 -DNOSIM_FB=0 -DNOSIM_UART=0 -DNOSIM_RENDER=0
+
+# do not warn on unreachable code
+CFLAGS+=--disable-warning 126
+#CFLAGS+=-DDEBUG_LEVEL=DEBUG_DEBUG
+#CFLAGS+=-DDEBUG_MAIN
+#CFLAGS+=-DDEBUG_RENDER
+#CFLAGS+=-DDEBUG_FRAMEBUFFER
 
 .SUFFIXES: .rel
 
@@ -25,7 +31,7 @@ sim: all
 	rm -f uart_tx
 	#rm -f uart_rx
 	#mkfifo uart_rx
-	$(SIM) -t 89C51R $(PROG) -I if=xram[0xffff] -C sim.cfg -X 12M -Sout=uart_tx,in=uart_rx
+	$(SIM) -t 89C51R $(PROG) -I if=sfr[0xff] -C sim.cfg -X 24M -Sout=uart_tx,in=uart_rx
 
 clean:
 	rm -f $(CSRC:.c=.rel)

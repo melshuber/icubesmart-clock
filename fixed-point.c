@@ -1,3 +1,9 @@
+#ifdef DEBUG_FIXED_POINT
+#define DEBUG_MODULE fixed_point
+#endif
+
+#include "debug.h"
+
 #include "fixed-point.h"
 #include <math.h>
 #include <stdint.h>
@@ -123,26 +129,41 @@ static __pdata union {
 
 #pragma save
 #pragma nogcse
+void fp_print(const fp_t val)
+{
+	fp_t e, v;
+	if (val < 0) {
+		v = -FP_INT(-val);
+		e = FP_INT(FP_EXP(-val) * 100);
+		if (v == 0) {
+			printf("      -0.%02d", e);
+		} else {
+			printf("%8d.%02d", v, e);
+		}
+	}
+	else {
+		v = FP_INT(val);
+		e = FP_INT(FP_EXP(val) * 100);
+		printf("%8d.%02d", v, e);
+	}
+}
+
 void fp_print_vec4(const vec4_t *v)
 {
 	uint8_t row;
 	for (row = 0; row < 4; row++) {
-		printf("%8d/%d",
-		       (*v)[row],
-		       FP_EXP_POW2);
+		fp_print((*v)[row]);
 	}
-	printf("\n");
+	putchar('\n');
 }
 
 void fp_print_vec3(const vec3_t *v)
 {
 	uint8_t row;
 	for (row = 0; row < 3; row++) {
-		printf("%8d/%d",
-		       (*v)[row],
-		       FP_EXP_POW2);
+		fp_print((*v)[row]);
 	}
-	printf("\n");
+	putchar('\n');
 }
 
 void fp_print_mat4x4(const mat4x4_t *m)
@@ -150,13 +171,11 @@ void fp_print_mat4x4(const mat4x4_t *m)
 	uint8_t row, col;
 	for (row = 0; row < 4; row++) {
 		for (col = 0; col < 4; col++) {
-			printf("%8d/%d",
-			       (*m)[row][col],
-			       FP_EXP_POW2);
-			sim_puts("b\n");
+			fp_print((*m)[row][col]);
 		}
-		printf("\n");
+		putchar('\n');
 	}
+	putchar('\n');
 }
 #pragma restore
 

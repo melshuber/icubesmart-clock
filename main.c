@@ -1,3 +1,8 @@
+#ifdef DEBUG_MAIN
+#define DEBUG_MODULE main
+#endif
+#include "debug.h"
+
 #include <stdint.h>
 #include "framebuffer.h"
 #include "uart.h"
@@ -6,8 +11,6 @@
 #include "render.h"
 #include "sim.h"
 #include "fixed-point.h"
-
-void test();
 
 static __xdata tex2D_t texture;
 
@@ -33,16 +36,13 @@ void bench_render_tex2d(__xdata fb_frame_t *fb)
 
 	for (i = 0; i < 100; i++) {
 		render_tex2D(fb, &texture, &m);
-		sim_put_uint8(i);
+		note("%02x", i);
 	}
 	sim_stop();
 }
 
 void main(void)
 {
-	while (!sim_detect());
-	sim_puts("SIMULATION\n");
-
 	memcpy(&texture, &tex1, sizeof(tex2D_t));
 
 	//bench_render_tex2d(fb_back_frame());
@@ -60,11 +60,11 @@ void main(void)
 	while (1) {
 		if (!fb_back_frame_complete()) {
 			render_frame(fb_back_frame());
-			/* render_printfb(fb_back_frame()); */
+			if (check_debug(DEBUG_DEBUG))
+			    render_printfb(fb_back_frame());
 			fb_back_frame_completed();
-			printf("%d\n", i);
+			note("Frame: %d\n", i);
 			i++;
-			sim_put_uint8(i);
 		}
 	}
 }

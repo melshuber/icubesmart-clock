@@ -1,14 +1,14 @@
+#ifdef DEBUG_FRAMEBUFFER
+#define DEBUG_MODULE framebuffer
+#endif
+
+#include "debug.h"
+
 #include "framebuffer.h"
 #include "cpu.h"
 #include "board.h"
 
-#if NOSIM_FB && SIMULATION
-#undef SIMULATION
-#define SIMULATION 0
-#endif
-
-#include "sim.h"
-
+#include <stdio.h>
 #include <string.h>
 
 /* PLANE_CLKS
@@ -33,10 +33,8 @@ __xdata fb_frame_t _fb_frame[2];
 static __xdata uint8_t *_fb_current_pixels = _fb_frame[0].pixels;
 static uint8_t _fb_current_plane = 0;
 
-void fb_init(void)
+void fb_init(void) __critical
 {
-	sim_puts("fb_init\n");
-
 	/* disable planes */;
 	PLANE_ENABLE = 0xff;
 
@@ -61,8 +59,6 @@ void fb_init(void)
 
 void fb_timer_isr(void) __interrupt(FB_TIMER_IRQ) __using(1)
 {
-	sim_puts("fb_timer_isr\n");
-
 	/* Increase TL, TH to allow for best precision
 	 * see STC89C51RC Manual sec. 7.2
 	 */
@@ -97,7 +93,6 @@ void fb_timer_isr(void) __interrupt(FB_TIMER_IRQ) __using(1)
 	if (_fb_current_plane >= 8) {
 		/* Check if we need to flip framebuffers */
 		if (fb_back_frame_complete()) {
-			sim_puts("fb_flip\n");
 			// flip frame
 			_fb_front_frame_idx ^= 1;
 			// indicate the back frame can be used

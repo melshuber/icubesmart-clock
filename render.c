@@ -1,14 +1,12 @@
+#ifdef DEBUG_RENDER
+#define DEBUG_MODULE render
+#endif
+#include "debug.h"
+
 #include "render.h"
 #include "fixed-point.h"
 
 #include <string.h>
-
-#if NOSIM_RENDER && SIMULATION
-#undef SIMULATION
-#define SIMULATION 0
-#endif
-
-#include "sim.h"
 
 static const vec4_t normal_x = {
 	FP_1,
@@ -115,14 +113,16 @@ static void render_tex2D_setup(mat4x4_t *transform)
 	fp_mul_mat4x4_vec4_3(&render_tex2D_xseg.pz, transform, &origin2);
 	fp_add_vec3_vec3(&render_tex2D_xseg.pz, &render_tex2D_xseg.pz, &tex2D_shift);
 
-	/* printf("tex\n"); */
-	/* fp_print_mat4x4(transform); */
-	/* printf("vectors\n"); */
-	/* printf("ux: "); fp_print_vec3(&render_tex2D_xseg.ux); */
-	/* printf("uy: "); fp_print_vec3(&render_tex2D_xseg.uy); */
-	/* printf("uz: "); fp_print_vec3(&render_tex2D_xseg.uz); */
-	/* printf("pz: "); fp_print_vec3(&render_tex2D_xseg.pz); */
-	/* printf("\n"); */
+	if (check_debug(DEBUG_DEBUG)) {
+		printf("tex\n");
+		fp_print_mat4x4(transform);
+		printf("vectors\n");
+		printf("ux: "); fp_print_vec3(&render_tex2D_xseg.ux);
+		printf("uy: "); fp_print_vec3(&render_tex2D_xseg.uy);
+		printf("uz: "); fp_print_vec3(&render_tex2D_xseg.uz);
+		printf("pz: "); fp_print_vec3(&render_tex2D_xseg.pz);
+		printf("\n");
+	};
 }
 
 #if !USE_RENDER_TEX2D_ASM || !USE_FAST_ADD_VEC3_ASM || !defined(FP_BITS_16) || (FP_EXP_BITS != 8)

@@ -95,5 +95,8 @@ void main(void)
 			note("Frame: %d\n", i);
 			i++;
 		}
+
+		// enter idle
+		PCON |= 1;
 	}
 }

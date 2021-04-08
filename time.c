@@ -130,7 +130,9 @@ static uint8_t _time_days_in_month_bcd(__xdata time_t *time)
 
 static void _time_do_tick()
 {
-	_time.tick++;
+	_time.ticks++;
+
+        _time.tick++;
 	if (_time.tick != TIME_TICK_HZ)
 		return;
 	_time.tick = 0;

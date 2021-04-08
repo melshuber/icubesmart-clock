@@ -11,6 +11,7 @@ typedef struct {
 	uint8_t day_bcd;
 	uint8_t month_bcd;
 	uint16_t year_bcd;
+	uint16_t ticks;
 } time_t;
 
 void time_init();

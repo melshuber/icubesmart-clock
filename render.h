@@ -8,10 +8,6 @@
 
 typedef uint8_t tex2D_t[8];
 
-extern const tex2D_t tex1;
-extern const tex2D_t tex2;
-extern const tex2D_t tex3;
-
 void render_clear(__xdata fb_frame_t *fb);
 void render_set_pixel(
 	__xdata fb_frame_t *fb,

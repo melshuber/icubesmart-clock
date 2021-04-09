@@ -2,6 +2,7 @@
 #include "cpu.h"
 #include "uart.h"
 #include "time.h"
+#include "util.h"
 #include <stdint.h>
 
 #if NOSIM_UART && SIMULATION
@@ -65,20 +66,6 @@ void uart_init(void) __critical
 	UART_IE = 1;
 }
 
-static uint8_t _uart_dec_to_bcd8(char *c)
-{
-	uint8_t tmp = 0;
-	if ((*c >= '0') && (*c <= '9')) {
-		tmp |= (*c - '0');
-	}
-	c++;
-	tmp <<= 4;
-	if ((*c >= '0') && (*c <= '9')) {
-		tmp |= (*c - '0');
-	}
-	return tmp;
-}
-
 static void _uart_dispatch_command() __critical
 {
 	uint32_t i;
@@ -98,14 +85,12 @@ static void _uart_dispatch_command() __critical
 	}
 	if (strncmp(_uart_data, "S:", 2) == 0) {
 		time_t time;
-		time.year_bcd = _uart_dec_to_bcd8(_uart_data + 2);
-		time.year_bcd <<= 8;
-		time.year_bcd |= _uart_dec_to_bcd8(_uart_data + 4);
-		time.month_bcd = _uart_dec_to_bcd8(_uart_data + 6);
-		time.day_bcd = _uart_dec_to_bcd8(_uart_data + 8);
-		time.hour_bcd = _uart_dec_to_bcd8(_uart_data + 10);
-		time.min_bcd = _uart_dec_to_bcd8(_uart_data + 12);
-		time.sec_bcd = _uart_dec_to_bcd8(_uart_data + 14);
+		time.year_bcd = util_dec_to_bcd16(_uart_data + 2);
+		time.month_bcd = util_dec_to_bcd8(_uart_data + 6);
+		time.day_bcd = util_dec_to_bcd8(_uart_data + 8);
+		time.hour_bcd = util_dec_to_bcd8(_uart_data + 10);
+		time.min_bcd = util_dec_to_bcd8(_uart_data + 12);
+		time.sec_bcd = util_dec_to_bcd8(_uart_data + 14);
 		time_set(&time);
 	}
 }

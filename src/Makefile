@@ -1,13 +1,15 @@
-TOOLCHAIN=/opt/sdcc/sdcc
-CC=$(TOOLCHAIN)/bin/sdcc
-SIM=$(TOOLCHAIN)/bin/s51
+# Defaults
+TOOLCHAIN?=/opt/sdcc/sdcc
+CC?=$(TOOLCHAIN)/bin/sdcc
+SIM?=$(TOOLCHAIN)/bin/s51
+TTY?=/dev/ttyUSB0
+BAUD?=115200
+
 MEMORY_MODEL=--model-medium
 CFLAGS=--debug -mmcs51 --std-c99 $(MEMORY_MODEL) -DFP_BITS_16 -DFP_EXP_BITS=8
 LDFLAGS=--debug -mmcs51 --std-c99 $(MEMORY_MODEL)
 PROG=icube.ihx
 CSRC=main.c framebuffer.c cpu.c sim.c uart.c render.c fixed-point.c time.c font.c util.c
-TTY?=/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0
-BAUD?=115200
 
 CFLAGS+=-DUSE_FAST_ADD_VEC3_ASM=1
 CFLAGS+=-DUSE_RENDER_TEX2D_ASM=1

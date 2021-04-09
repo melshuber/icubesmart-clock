@@ -5,6 +5,7 @@
 
 #include "board.h"
 #include "time.h"
+#include "util.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -49,38 +50,6 @@ void time_set(const time_t *time) __critical
 	_time.day_bcd = time->day_bcd;
 	_time.month_bcd = time->month_bcd;
 	_time.year_bcd = time->year_bcd;
-}
-
-void _time_inc_bcd8(__xdata uint8_t *v) __naked
-{
-	(void)v;
-	__asm
-		movx	A, @DPTR
-		add	A, #1
-		da	A
-		movx	@DPTR, A
-		ret
-	__endasm;
-}
-
-void _time_inc_bcd16(__xdata uint16_t *v) __naked
-{
-	(void)v;
-	__asm
-		movx	A, @DPTR
-		add	A, #1
-		da	A
-		movx	@DPTR, A
-		jnc	0001$
-
-		inc	DPTR
-		movx	A, @DPTR
-		addc	A, #0
-		da	A
-		movx	@DPTR, A
-	0001$:
-		ret
-	__endasm;
 }
 
 static uint8_t _time_days_in_month_bcd(__xdata time_t *time)
@@ -148,32 +117,32 @@ static void _time_do_tick()
 		return;
 	_time.tick = 0;
 
-	_time_inc_bcd8(&_time.sec_bcd);
+	util_inc_bcd8(&_time.sec_bcd);
 	if (_time.sec_bcd != 0x60)
 		return;
 	_time.sec_bcd = 0x00;
 
-	_time_inc_bcd8(&_time.min_bcd);
+	util_inc_bcd8(&_time.min_bcd);
 	if (_time.min_bcd != 0x60)
 		return;
 	_time.min_bcd = 0x00;
 
-	_time_inc_bcd8(&_time.hour_bcd);
+	util_inc_bcd8(&_time.hour_bcd);
 	if (_time.hour_bcd != 0x24)
 		return;
 	_time.hour_bcd = 0x00;
 
-       _time_inc_bcd8(&_time.day_bcd);
+       util_inc_bcd8(&_time.day_bcd);
        if (_time.day_bcd <= _time_days_in_month_bcd(&_time))
 		return;
        _time.day_bcd = 0x01;
 
-       _time_inc_bcd8(&_time.month_bcd);
+       util_inc_bcd8(&_time.month_bcd);
        if (_time.month_bcd <= 12)
 		return;
        _time.month_bcd = 0x01;
 
-       _time_inc_bcd16(&_time.year_bcd);
+       util_inc_bcd16(&_time.year_bcd);
 }
 
 void time_isr()

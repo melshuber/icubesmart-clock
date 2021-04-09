@@ -90,7 +90,7 @@ void bench_render_tex2d(__xdata fb_frame_t *fb)
 	int8_t i;
 
 	memset(&XSO(texture), 0xff, sizeof(tex2D_t));
-        fp_identity_mat4x4(&XSO(m));
+	fp_identity_mat4x4(&XSO(m));
 
 	for (i = 0; i < 100; i++) {
 		render_tex2D(fb, &XSO(texture), &XSO(m));
@@ -104,22 +104,23 @@ void bench_render_tex2d(__xdata fb_frame_t *fb)
 void render_digits(__xdata fb_frame_t *fb) __reentrant
 {
 	int i;
+
 	static const mat4x4_t mat_rotate = {
-		{  FP_1,  FP_0,  FP_0,  FP_0, },
-		{  FP_0,  FP_0, -FP_1,  FP_0, },
-		{  FP_0,  FP_1,  FP_0,  FP_0, },
-		{  FP_1,  FP_0,  FP_0,  FP_1, },
+		{  FP_0,  FP_1,	 FP_0,	FP_0, },
+		{  FP_0,  FP_0, -FP_1,	FP_0, },
+		{ -FP_1,  FP_0,	 FP_0,	FP_0, },
+		{  FP_0,  FP_0,	 FP_0,	FP_1, },
 	};
 
 	static const vec4_t pos[4] = {
-		{ FP_1, fp_add(-FP_3, -FP_1/2), FP_0 },
-		{ -FP_1, fp_add(-FP_1, -FP_1/2), FP_0 },
-		{ FP_1, fp_add(FP_1, FP_1/2), FP_0 },
-		{ -FP_1, fp_add(FP_3, FP_1/2), FP_0 },
+		{ fp_add(FP_3, FP_1/2), FP_1, FP_0 },
+		{ fp_add(FP_1, FP_1/2), -FP_1, FP_0 },
+		{ fp_add(-FP_1, -FP_1/2), FP_1, FP_0 },
+		{ fp_add(-FP_3, -FP_1/2), -FP_1, FP_0 },
 	};
 
 	uint16_t new_digits = _digits_animation.new_digits;
-	uint16_t old_digits = _digits_animation.old_digits;	
+	uint16_t old_digits = _digits_animation.old_digits;
 
 	for (i = 0; i < 4; i++) {
 		uint8_t new_digit = new_digits & 0xf;
@@ -131,23 +132,38 @@ void render_digits(__xdata fb_frame_t *fb) __reentrant
 			       font_get_texture('0' + new_digit),
 			       sizeof(tex2D_t));
 		} else {
-			XSO(v)[1] = fp_sub(XSO(v)[1], FP_FROM_INT(_digits_animation.step));
-			if (XSO(v)[1] < -FP_4) {
-				XSO(v)[1] = fp_add(XSO(v)[1], FP_FROM_INT(8));
-				memcpy(&XSO(texture),
-				       font_get_texture('0' + new_digit),
-				       sizeof(tex2D_t));
+			if (XSO(v)[0] > 0) {
+				XSO(v)[0] = fp_add(XSO(v)[0], FP_FROM_INT(_digits_animation.step));
+				if (XSO(v)[0] > FP_4) {
+					XSO(v)[0] = fp_sub(XSO(v)[0], FP_FROM_INT(8));
+					memcpy(&XSO(texture),
+					       font_get_texture('0' + new_digit),
+					       sizeof(tex2D_t));
+				} else {
+					memcpy(&XSO(texture),
+					       font_get_texture('0' + old_digit),
+					       sizeof(tex2D_t));
+				}
 			} else {
-				memcpy(&XSO(texture),
-				       font_get_texture('0' + old_digit),
-				       sizeof(tex2D_t));
+				XSO(v)[0] = fp_sub(XSO(v)[0], FP_FROM_INT(_digits_animation.step));
+				if (XSO(v)[0] < -FP_4) {
+					XSO(v)[0] = fp_add(XSO(v)[0], FP_FROM_INT(8));
+					memcpy(&XSO(texture),
+					       font_get_texture('0' + new_digit),
+					       sizeof(tex2D_t));
+				} else {
+					memcpy(&XSO(texture),
+					       font_get_texture('0' + old_digit),
+					       sizeof(tex2D_t));
+				}
 			}
 		}
 
-                memcpy(&XSO(m), &mat_rotate, sizeof(mat4x4_t));
+		memcpy(&XSO(m), &mat_rotate, sizeof(mat4x4_t));
+
 		fp_post_translate_mat4x4_vec3(&XSO(m), &XSO(v));
 
-                render_tex2D(fb, &XSO(texture), &XSO(m));
+		render_tex2D(fb, &XSO(texture), &XSO(m));
 
 		new_digits >>= 4;
 		old_digits >>= 4;
@@ -176,7 +192,7 @@ void main(void)
 	time_t time;
 	time_get(&time);
 
-        uint8_t i=0;
+	uint8_t i=0;
 	_digits_animation.old_digits = 0xffff;
 	_digits_animation.new_digits = 0xffff;
 	_digits_animation.step = 9;
@@ -188,13 +204,13 @@ void main(void)
 			continue;
 		}
 
-                time_get(&time);
+		time_get(&time);
 
 		__xdata fb_frame_t *fb = fb_back_frame();
 
-                if (_digits_animation.step > 8) {
-			tmp = ((uint16_t)time.min_bcd) << 8;
-			tmp |= time.sec_bcd;
+		if (_digits_animation.step > 8) {
+			tmp = ((uint16_t)time.hour_bcd) << 8;
+			tmp |= time.min_bcd;
 
 			if (_digits_animation.new_digits != tmp) {
 				_digits_animation.old_digits = _digits_animation.new_digits;
@@ -224,8 +240,8 @@ void main(void)
 
 			time_get(&time);
 
-                        fb_back_frame_completed();
-			note("Frame: %d; ticks: %u, %d\n", i, time.ticks - ticks, ticks);
+			fb_back_frame_completed();
+			note("f\n");
 			i++;
 		}
 	}

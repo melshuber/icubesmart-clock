@@ -17,5 +17,6 @@ typedef struct {
 void time_init();
 void time_isr();
 void time_get(time_t *time);
+void time_set(const time_t *time);
 
 #endif

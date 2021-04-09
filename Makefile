@@ -40,6 +40,9 @@ sim: all
 flash: all
 	stcgal -P stc12 -p $(TTY) -b $(BAUD) icube.ihx
 
+settime:
+	./set_time.sh $(TTY)
+
 console:
 	picocom -b $(BAUD) $(TTY)
 

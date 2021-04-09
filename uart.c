@@ -1,6 +1,7 @@
 #include "board.h"
 #include "cpu.h"
 #include "uart.h"
+#include "time.h"
 #include <stdint.h>
 
 #if NOSIM_UART && SIMULATION
@@ -16,11 +17,23 @@
 static volatile __bit _uart_busy;
 static volatile __bit _uart_redirect_to_simulation;
 static volatile __bit _uart_need_nl;
+static char _uart_data[32];
+static uint8_t _uart_data_pos;
+
+/* Command interface
+ *
+ * RX Line: "S:YYYYMMDDHHMMSS\n"
+ *   Set Time
+ * RX Line: "R\n"
+ *   Reboot to ISP
+ */
 
 void uart_init(void) __critical
 {
 	uint8_t tmp;
 
+	memset(_uart_data, 0, sizeof(_uart_data));
+        _uart_data_pos = 0;
 	_uart_busy = 0;
         _uart_need_nl = 0;
         _uart_redirect_to_simulation = 0;
@@ -52,6 +65,51 @@ void uart_init(void) __critical
 	UART_IE = 1;
 }
 
+static uint8_t _uart_dec_to_bcd8(char *c)
+{
+	uint8_t tmp = 0;
+	if ((*c >= '0') && (*c <= '9')) {
+		tmp |= (*c - '0');
+	}
+	c++;
+	tmp <<= 4;
+	if ((*c >= '0') && (*c <= '9')) {
+		tmp |= (*c - '0');
+	}
+	return tmp;
+}
+
+static void _uart_dispatch_command() __critical
+{
+	uint32_t i;
+	if (strcmp(_uart_data, "R") == 0) {
+		for (i = 1000000; i > 0; i--) {
+			NOP();
+			NOP();
+			NOP();
+			NOP();
+			NOP();
+			NOP();
+			NOP();
+			NOP();
+		}
+		IAP_CONTR = 0x60;  //0110_0000 soft reset system to run ISP
+		return;
+	}
+	if (strncmp(_uart_data, "S:", 2) == 0) {
+		time_t time;
+		time.year_bcd = _uart_dec_to_bcd8(_uart_data + 2);
+		time.year_bcd <<= 8;
+		time.year_bcd |= _uart_dec_to_bcd8(_uart_data + 4);
+		time.month_bcd = _uart_dec_to_bcd8(_uart_data + 6);
+		time.day_bcd = _uart_dec_to_bcd8(_uart_data + 8);
+		time.hour_bcd = _uart_dec_to_bcd8(_uart_data + 10);
+		time.min_bcd = _uart_dec_to_bcd8(_uart_data + 12);
+		time.sec_bcd = _uart_dec_to_bcd8(_uart_data + 14);
+		time_set(&time);
+	}
+}
+
 void uart_isr() __interrupt(UART_IRQ)
 {
 	uint8_t tmp;
@@ -68,12 +126,16 @@ void uart_isr() __interrupt(UART_IRQ)
 
 	if (UART_RI) {
 		tmp = SBUF;
-
-		if (tmp == 'R') {
-			IAP_CONTR = 0x60;  //0110_0000 soft reset system to run ISP
-		}
-
 		UART_RI = 0;
+
+                if (tmp == '\r' || tmp == '\n') {
+			_uart_dispatch_command();
+			memset(_uart_data, 0, sizeof(_uart_data));
+			_uart_data_pos = 0;
+		} else if (_uart_data_pos < 31) {
+			_uart_data[_uart_data_pos] = tmp;
+			_uart_data_pos++;
+		}
 	}
 }
 

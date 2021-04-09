@@ -23,6 +23,7 @@ void time_init() __critical
 	TIME_CCAPM = TIME_ECOM_val | TIME_MAT_val | TIME_ECCF_val;
 
 	_time.tick = 0;
+	_time.ticks = 0;
 	_time.sec_bcd = 0x00;
 	_time.min_bcd = 0x00;
 	_time.hour_bcd = 0x00;
@@ -38,6 +39,16 @@ void time_get(time_t *time)
 	memcpy(time, &_time, sizeof(time_t));
 
 	TIME_CCAPM = TIME_ECOM_val | TIME_MAT_val | TIME_ECCF_val;
+}
+
+void time_set(const time_t *time) __critical
+{
+	_time.sec_bcd = time->sec_bcd;
+	_time.min_bcd = time->min_bcd;
+	_time.hour_bcd = time->hour_bcd;
+	_time.day_bcd = time->day_bcd;
+	_time.month_bcd = time->month_bcd;
+	_time.year_bcd = time->year_bcd;
 }
 
 void _time_inc_bcd8(__xdata uint8_t *v) __naked

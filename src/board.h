@@ -11,15 +11,21 @@
 #define TIMER_CLK_HZ (CPU_CLK_HZ / 12)
 
 /* Configure Frame Buffer */
-
-#define FB_TIMER_MOD TMOD
-#define FB_TIMER 0
-#define FB_TIMER_IRQ 1
-#define FB_TIMER_MOD_SHIFT (FB_TIMER * 4)
-#define FB_TIMER_RUN TR0
-#define FB_TIMER_IE ET0
-#define FB_TIMER_TL TL0
-#define FB_TIMER_TH TH0
+#define FB_CLK_HZ PCA_HZ
+#define FB_TICK_HZ Hz(800)
+#define FB_TICKS (FB_CLK_HZ/FB_TICK_HZ)
+#define FB_CCF CCF1
+#define FB_CCAPM CCAPM1
+#define FB_ECCF_val ECCF1_val
+#define FB_PWM_val PWM1_val
+#define FB_TOG_val TOG1_val
+#define FB_MAT_val MAT1_val
+#define FB_CAPN_val CAPN1_val
+#define FB_CAPP0_val CAPP1_val
+#define FB_ECOM_val ECOM1_val
+#define FB_CCAPL CCAP1L
+#define FB_CCAPH CCAP1H
+#define FB_PCA_PWM PCA_PWM1
 
 #define LATCH_DATA P0
 #define LATCH_LOAD P2

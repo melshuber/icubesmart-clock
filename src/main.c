@@ -60,6 +60,10 @@ void pca_init() __critical
 
 void pca_isr() __interrupt(7)
 {
+	if (FB_CCF) {
+		FB_CCF = 0;
+		fb_isr();
+	}
 	if (TIME_CCF) {
 		TIME_CCF = 0;
 		time_isr();

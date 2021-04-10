@@ -21,7 +21,7 @@ extern __xdata fb_frame_t _fb_frame[2];
 
 void fb_init(void);
 void fb_display_frame(void);
-void fb_timer_isr(void) __interrupt(FB_TIMER_IRQ);
+void fb_isr(void);
 
 #define fb_back_frame_complete() \
 	(_fb_back_frame_complete != 0)

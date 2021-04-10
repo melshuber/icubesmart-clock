@@ -32,6 +32,7 @@ volatile uint8_t _fb_back_frame_complete = 0;
 __xdata fb_frame_t _fb_frame[2];
 static __xdata uint8_t *_fb_current_pixels = _fb_frame[0].pixels;
 static uint8_t _fb_current_plane = 0;
+static uint16_t _fb_ccap_val = 0;
 
 void fb_init(void) __critical
 {
@@ -45,33 +46,20 @@ void fb_init(void) __critical
 	_fb_current_plane = 0;
 
 	/* Setup Timer as 16 Timer */
-	uint8_t tmp = FB_TIMER_MOD;
-	tmp &= ~(0x0f << FB_TIMER_MOD_SHIFT);
-	tmp |= (0x01 << FB_TIMER_MOD_SHIFT);
-	FB_TIMER_MOD = tmp;
-
-	FB_TIMER_TL = FB_TIMER_TL_VAL;
-	FB_TIMER_TH = FB_TIMER_TH_VAL;
-
-	FB_TIMER_IE = 1;
-	FB_TIMER_RUN = 1;
+	_fb_ccap_val = FB_TICKS;
+	FB_CCAPL = FB_TICKS & 0xff;
+	FB_CCAPH = (FB_TICKS >> 8) & 0xff;
+	FB_PCA_PWM = 0;
+	FB_CCAPM = FB_ECOM_val | FB_MAT_val | FB_ECCF_val;
 }
 
-void fb_timer_isr(void) __interrupt(FB_TIMER_IRQ) __using(1)
+void fb_isr(void)
 {
-	/* Increase TL, TH to allow for best precision
-	 * see STC89C51RC Manual sec. 7.2
-	 */
-	__asm
-		CLR EA
-		MOV A, FB_TIMER_TL
-		ADD A, #FB_TIMER_TL_VAL
-		MOV FB_TIMER_TL, A
-		MOV A, FB_TIMER_TH
-		ADDC A, #FB_TIMER_TH_VAL
-		MOV FB_TIMER_TH, A
-		SETB EA
-	__endasm;
+	uint16_t tmp = _fb_ccap_val;
+	tmp += FB_TICKS;
+	_fb_ccap_val = tmp;
+	FB_CCAPL = tmp & 0xff;
+	FB_CCAPH = (tmp >> 8) & 0xff;
 
 	/* disable planes */;
 	PLANE_ENABLE = 0xff;

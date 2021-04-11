@@ -45,6 +45,7 @@ typedef struct {
 			uint16_t old_digits;
 			uint16_t new_digits;
 			uint8_t pending;
+			uint8_t dark;
 		} mode_clock;
 	};
 } display_state_t;
@@ -205,11 +206,21 @@ static void _mode_clock_setup()
 	_display_state.mode_clock.step = 9;
 	_display_state.mode_clock.start_tick = 0;
 	_display_state.mode_clock.pending = 1;
+	_display_state.mode_clock.dark = 0;
 }
 
 static void _mode_clock_handle()
 {
 	uint16_t tmp;
+
+	switch (key_consume_event()) {
+	case KEY_MAKE_EVENT(KEY_START, KEY_PRESS):
+		_display_state.mode_clock.dark ^= 1;
+		_display_state.mode_clock.pending = 1;
+		break;
+	default:
+		break;
+	}
 
 	/* Check if a back framebuffer is available */
 	if (fb_back_frame_complete()) {
@@ -246,7 +257,8 @@ static void _mode_clock_handle()
 	if (_display_state.mode_clock.pending != 0) {
 		__xdata fb_frame_t *fb = fb_back_frame();
 		render_clear(fb);
-		_mode_clock_render(fb);
+		if (!_display_state.mode_clock.dark)
+			_mode_clock_render(fb);
 		fb_back_frame_completed();
 		note("f\n");
 	}

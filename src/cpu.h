@@ -9,6 +9,17 @@
 extern __sfr P0;
 extern __sfr P1;
 extern __sfr P2;
+extern __sfr P3;
+extern __sfr P4;
+extern __sbit P4_0;
+extern __sbit P4_1;
+extern __sbit P4_2;
+extern __sbit P4_3;
+extern __sbit P4_4;
+extern __sbit P4_5;
+extern __sbit P4_6;
+extern __sbit P4_7;
+extern __sfr P5;
 
 /* Timer 0/1 Registers */
 extern __sfr TCON;

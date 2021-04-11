@@ -9,7 +9,7 @@ MEMORY_MODEL=--model-medium
 CFLAGS=--debug -mmcs51 --std-c99 $(MEMORY_MODEL) -DFP_BITS_16 -DFP_EXP_BITS=8
 LDFLAGS=--debug -mmcs51 --std-c99 $(MEMORY_MODEL)
 PROG=icube.ihx
-CSRC=main.c framebuffer.c cpu.c sim.c uart.c render.c fixed-point.c time.c font.c util.c
+CSRC=main.c framebuffer.c cpu.c sim.c uart.c render.c fixed-point.c time.c font.c util.c key.c
 
 CFLAGS+=-DUSE_FAST_ADD_VEC3_ASM=1
 CFLAGS+=-DUSE_RENDER_TEX2D_ASM=1
@@ -23,6 +23,7 @@ CFLAGS+=--disable-warning 126
 #CFLAGS+=-DDEBUG_TIME
 #CFLAGS+=-DDEBUG_FONT
 #CFLAGS+=-DDEBUG_UTIL
+#CFLAGS+=-DDEBUG_KEY
 
 .SUFFIXES: .rel
 

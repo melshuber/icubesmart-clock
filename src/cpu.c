@@ -2,6 +2,17 @@
 __sfr __at(0x80) P0;
 __sfr __at(0x90) P1;
 __sfr __at(0xA0) P2;
+__sfr __at(0xB0) P3;
+__sfr __at(0xC0) P4;
+__sbit __at(0xC0) P4_0;
+__sbit __at(0xC1) P4_1;
+__sbit __at(0xC2) P4_2;
+__sbit __at(0xC3) P4_3;
+__sbit __at(0xC4) P4_4;
+__sbit __at(0xC5) P4_5;
+__sbit __at(0xC6) P4_6;
+__sbit __at(0xC7) P4_7;
+__sfr __at(0xC8) P5;
 
 /* Timer 0/1 Registers */
 __sfr __at(0x88) TCON;

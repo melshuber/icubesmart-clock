@@ -13,6 +13,7 @@
 #include "fixed-point.h"
 #include "time.h"
 #include "font.h"
+#include "key.h"
 
 static __xdata union {
 	struct {
@@ -67,6 +68,7 @@ void pca_isr() __interrupt(7)
 	if (TIME_CCF) {
 		TIME_CCF = 0;
 		time_isr();
+		key_isr();
 	}
 }
 
@@ -188,6 +190,9 @@ void main(void)
 
 	time_init();
 	printf("Time initialized\n");
+
+	key_init();
+	printf("Keys initialized\n");
 
 	pca_init();
 	printf("PCA initialized\n");

@@ -10,6 +10,18 @@
 #define CPU_CLK_HZ M(Hz(24))
 #define TIMER_CLK_HZ (CPU_CLK_HZ / 12)
 
+/* Key IO Configure */
+#define KEY_START 0
+#define KEY_CYCLE 1
+#define KEY_NEXT 2
+#define KEY_START_BIT P4_1
+#define KEY_CYCLE_BIT P4_2
+#define KEY_NEXT_BIT P4_3
+#define KEY_PORT P4
+#define KEY_POLL_HZ TIME_TICK_HZ
+#define KEY_SHORT_TICKS (TIME_TICK_HZ / 10)
+#define KEY_LONG_TICKS (TIME_TICK_HZ * 2)
+
 /* Configure Frame Buffer */
 #define FB_CLK_HZ PCA_HZ
 #define FB_TICK_HZ Hz(800)

@@ -29,7 +29,14 @@
 
 volatile uint8_t _fb_front_frame_idx = 0;
 volatile uint8_t _fb_back_frame_complete = 0;
-__xdata fb_frame_t _fb_frame[2];
+__xdata fb_frame_t FB_FRAME_BUFFER_ATTR _fb_frame[2] = {
+	{
+		.pixels = { 0 },
+	},
+	{
+		.pixels = { 0 },
+	},
+};
 static __xdata uint8_t *_fb_current_pixels = _fb_frame[0].pixels;
 static uint8_t _fb_current_plane = 0;
 static uint16_t _fb_ccap_val = 0;

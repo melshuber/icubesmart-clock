@@ -16,8 +16,10 @@ typedef struct {
 extern volatile uint8_t _fb_front_frame_idx;
 /* If one the frame buffer is ready an shall be flipped */
 extern volatile uint8_t _fb_back_frame_complete;
+
+#define FB_FRAME_BUFFER_ATTR __at(0x380)
 /* The two frames */
-extern __xdata fb_frame_t _fb_frame[2];
+extern __xdata fb_frame_t FB_FRAME_BUFFER_ATTR _fb_frame[2];
 
 void fb_init(void);
 void fb_display_frame(void);

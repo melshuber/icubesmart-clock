@@ -6,14 +6,21 @@ TTY?=/dev/ttyUSB0
 BAUD?=115200
 
 MEMORY_MODEL=--model-medium
-CFLAGS=--debug -mmcs51 --std-c99 $(MEMORY_MODEL) -DFP_BITS_16 -DFP_EXP_BITS=8
-LDFLAGS=--debug -mmcs51 --std-c99 $(MEMORY_MODEL)
-PROG=icube.ihx
-CSRC=main.c framebuffer.c cpu.c sim.c uart.c render.c fixed-point.c time.c font.c util.c key.c
 
+LDFLAGS+=-mmcs51
+LDFLAGS+=--std-c99
+LDFLAGS+=--debug
+LDFLAGS+=$(MEMORY_MODEL)
+LDFLAGS+=--iram-size 256
+LDFLAGS+=--xram-size 1024
+LDFLAGS+=--code-size 61440
+
+CFLAGS=-mmcs51
+CFLAGS+=--std-c99 $(MEMORY_MODEL)
+CFLAGS+=--debug
+CFLAGS+=-DFP_BITS_16 -DFP_EXP_BITS=8
 CFLAGS+=-DUSE_FAST_ADD_VEC3_ASM=1
 CFLAGS+=-DUSE_RENDER_TEX2D_ASM=1
-
 # do not warn on unreachable code
 CFLAGS+=--disable-warning 126
 #CFLAGS+=-DDEBUG_LEVEL=DEBUG_DEBUG
@@ -24,6 +31,9 @@ CFLAGS+=--disable-warning 126
 #CFLAGS+=-DDEBUG_FONT
 #CFLAGS+=-DDEBUG_UTIL
 #CFLAGS+=-DDEBUG_KEY
+
+PROG=icube.ihx
+CSRC=main.c framebuffer.c cpu.c sim.c uart.c render.c fixed-point.c time.c font.c util.c key.c
 
 .SUFFIXES: .rel
 
